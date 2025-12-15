@@ -1,0 +1,2975 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления - Ювелирный магазин</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #d4af37;
+            --primary-dark: #b8941f;
+            --primary-light: #f4e4a6;
+            --secondary: #343a40;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #f7ef8a 100%);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Темная тема */
+        .dark-theme {
+            --light: #212529;
+            --dark: #f8f9fa;
+            --secondary: #495057;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Навигация */
+        .navbar-custom {
+            background: var(--secondary) !important;
+            box-shadow: var(--shadow);
+            padding: 0.8rem 0;
+        }
+
+        .logo-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .navbar-user .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gold-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Сайдбар */
+        .sidebar {
+            background: var(--secondary);
+            color: white;
+            min-height: calc(100vh - 73px);
+            padding: 1.5rem 0;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-menu a.active {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Основной контент */
+        .main-content {
+            padding: 2rem;
+            min-height: calc(100vh - 73px);
+        }
+
+        /* Карточки */
+        .card-custom {
+            background: var(--secondary);
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header-custom {
+            background: rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1.25rem 1.5rem;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .stat-card {
+            color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .bg-primary-gradient { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); }
+        .bg-success-gradient { background: linear-gradient(135deg, #2a9d8f 0%, #1d3557 100%); }
+        .bg-warning-gradient { background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%); }
+        .bg-info-gradient { background: linear-gradient(135deg, #48cae4 0%, #0096c7 100%); }
+
+        /* Кнопки */
+        .btn-gold {
+            background: var(--gold-gradient);
+            border: none;
+            color: #000;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Таблицы */
+        .table-custom {
+            background: transparent;
+            color: var(--dark);
+        }
+
+        .table-custom thead {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--dark);
+        }
+
+        .table-custom th {
+            border: none;
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .table-custom td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(212, 175, 55, 0.1);
+        }
+
+        /* Формы */
+        .form-control-custom {
+            background: var(--secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--dark);
+            border-radius: 8px;
+        }
+
+        .form-control-custom:focus {
+            background: var(--secondary);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+            color: var(--dark);
+        }
+
+        /* Анимации */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Переключатель темы */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .theme-slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .theme-slider:before {
+            transform: translateX(30px);
+        }
+
+        /* Загрузка */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Чарты */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Уведомления - ИСПРАВЛЕНО */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            animation: slideInRight 0.3s ease-out;
+            display: none;
+            font-weight: 500;
+            color: white !important;
+            border-left: 4px solid;
+        }
+
+        .notification i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.success {
+            background: #28a745 !important;
+            border-left-color: #1e7e34;
+        }
+
+        .notification.error {
+            background: #dc3545 !important;
+            border-left-color: #bd2130;
+        }
+
+        .notification.warning {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            border-left-color: #d39e00;
+        }
+
+        .notification.info {
+            background: #17a2b8 !important;
+            border-left-color: #117a8b;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+                margin-bottom: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .notification {
+                min-width: 250px;
+                left: 20px;
+                right: 20px;
+            }
+        }
+
+        /* Индикатор остатка */
+        .stock-indicator {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .stock-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .stock-good { background: #28a745; }
+        .stock-warning { background: #ffc107; }
+        .stock-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <div class="logo-mini">
+                    <i class="bi bi-gem"></i>
+                    <span>JewelryStock</span>
+                </div>
+            </a>
+            
+            <div class="navbar-user">
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" 
+                       data-bs-toggle="dropdown">
+                        <div class="user-avatar">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div class="user-info ms-2">
+                            <span id="currentUserName" class="d-block">Администратор</span>
+                            <small class="text-muted">admin@goldstandard.ru</small>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="showSection('profile')">
+                            <i class="bi bi-person"></i> Профиль
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('settings')">
+                            <i class="bi bi-gear"></i> Настройки
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Выход
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Сайдбар -->
+            <div class="col-lg-2 sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" onclick="showSection('dashboard')" class="active" id="menuDashboard">
+                        <i class="bi bi-speedometer2"></i> Панель управления
+                    </a></li>
+                    <li><a href="#" onclick="showSection('products')" id="menuProducts">
+                        <i class="bi bi-gem"></i> Товары
+                    </a></li>
+                    <li><a href="#" onclick="showSection('transactions')" id="menuTransactions">
+                        <i class="bi bi-arrow-left-right"></i> Движение
+                    </a></li>
+                    <li><a href="#" onclick="showSection('profile')" id="menuProfile">
+                        <i class="bi bi-person-circle"></i> Профиль
+                    </a></li>
+                    <li><a href="#" onclick="showSection('settings')" id="menuSettings">
+                        <i class="bi bi-gear"></i> Настройки
+                    </a></li>
+                </ul>
+
+                <div class="mt-4 px-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small>Тема:</small>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-gold w-100 mb-2" onclick="showAddProductModal()">
+                        <i class="bi bi-plus-circle"></i> Новый товар
+                    </button>
+                </div>
+            </div>
+
+            <!-- Основной контент -->
+            <div class="col-lg-10 main-content">
+                <!-- Дашборд -->
+                <div id="section-dashboard" class="section-content fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Панель управления</h1>
+                            <p class="text-muted mb-0">Обзор системы складского учета</p>
+                        </div>
+                        <div class="text-end">
+                            <span id="currentDate"></span>
+                            <br>
+                            <small class="text-muted" id="currentTime"></small>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stat-card bg-primary-gradient">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Общая стоимость</h6>
+                                            <h2 class="card-value" id="totalValue">0 ₽</h2>
+                                        </div>
+                                        <div class="stat-icon">
+                                            <i class="bi bi-currency-dollar"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stat-card bg-success-gradient">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Товаров на складе</h6>
+                                            <h2 class="card-value" id="totalProducts">0</h2>
+                                        </div>
+                                        <div class="stat-icon">
+                                            <i class="bi bi-box-seam"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stat-card bg-warning-gradient">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Продажи за месяц</h6>
+                                            <h2 class="card-value" id="monthlySales">0 ₽</h2>
+                                        </div>
+                                        <div class="stat-icon">
+                                            <i class="bi bi-cart-check"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stat-card bg-info-gradient">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h6 class="card-title">Низкий остаток</h6>
+                                            <h2 class="card-value" id="lowStock">0</h2>
+                                        </div>
+                                        <div class="stat-icon">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Последние товары -->
+                    <div class="card card-custom mb-4">
+                        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Последние товары</h5>
+                            <button class="btn btn-sm btn-gold" onclick="showAddProductModal()">
+                                <i class="bi bi-plus-circle"></i> Добавить
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Категория</th>
+                                            <th>Материал</th>
+                                            <th>Цена</th>
+                                            <th>Остаток</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentProductsTable">
+                                        <!-- Заполнится через JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- График продаж -->
+                    <div class="card card-custom">
+                        <div class="card-header card-header-custom">
+                            <h5 class="card-title mb-0">Продажи по месяцам</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Товары -->
+                <div id="section-products" class="section-content d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Управление товарами</h1>
+                            <p class="text-muted mb-0">Каталог ювелирных изделий</p>
+                        </div>
+                        <button class="btn btn-gold" onclick="showAddProductModal()">
+                            <i class="bi bi-plus-circle"></i> Добавить товар
+                        </button>
+                    </div>
+
+                    <!-- Фильтры -->
+                    <div class="card card-custom mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control form-control-custom" 
+                                           id="productSearch" placeholder="Поиск по названию...">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-control-custom" id="categoryFilter">
+                                        <option value="">Все категории</option>
+                                        <option value="Кольцо">Кольца</option>
+                                        <option value="Серьги">Серьги</option>
+                                        <option value="Цепочка">Цепочки</option>
+                                        <option value="Браслет">Браслеты</option>
+                                        <option value="Кулон">Кулоны</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-control-custom" id="materialFilter">
+                                        <option value="">Все материалы</option>
+                                        <option value="Золото">Золото</option>
+                                        <option value="Серебро">Серебро</option>
+                                        <option value="Платина">Платина</option>
+                                        <option value="Белое золото">Белое золото</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-control-custom" id="statusFilter">
+                                        <option value="">Все статусы</option>
+                                        <option value="available">В наличии</option>
+                                        <option value="low_stock">Мало осталось</option>
+                                        <option value="out_of_stock">Нет в наличии</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица товаров -->
+                    <div class="card card-custom">
+                        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Список товаров</h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-light me-2" onclick="exportProducts()">
+                                    <i class="bi bi-download"></i> Экспорт
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="refreshProducts()">
+                                    <i class="bi bi-arrow-clockwise"></i> Обновить
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Название</th>
+                                            <th>Категория</th>
+                                            <th>Материал</th>
+                                            <th>Вес</th>
+                                            <th>Цена</th>
+                                            <th>Остаток</th>
+                                            <th>Статус</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTable">
+                                        <!-- Заполнится через JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Движение товаров -->
+                <div id="section-transactions" class="section-content d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Движение товаров</h1>
+                            <p class="text-muted mb-0">История поступлений и продаж</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-gold me-2" onclick="showAddTransactionModal('receipt')">
+                                <i class="bi bi-box-arrow-in-down"></i> Поступление
+                            </button>
+                            <button class="btn btn-success" onclick="showAddTransactionModal('sale')">
+                                <i class="bi bi-cart-check"></i> Продажа
+                            </button>
+                            <button class="btn btn-danger ms-2" onclick="showAddTransactionModal('write_off')">
+                                <i class="bi bi-x-circle"></i> Списание
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Фильтры транзакций -->
+                    <div class="card card-custom mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Дата с</label>
+                                    <input type="date" class="form-control form-control-custom" id="dateFrom">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Дата по</label>
+                                    <input type="date" class="form-control form-control-custom" id="dateTo">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Тип операции</label>
+                                    <select class="form-select form-control-custom" id="transactionTypeFilter">
+                                        <option value="">Все операции</option>
+                                        <option value="receipt">Поступления</option>
+                                        <option value="sale">Продажи</option>
+                                        <option value="write_off">Списания</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица транзакций -->
+                    <div class="card card-custom">
+                        <div class="card-header card-header-custom">
+                            <h5 class="card-title mb-0">История операций</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-custom">
+                                    <thead>
+                                        <tr>
+                                            <th>Дата</th>
+                                            <th>Тип</th>
+                                            <th>Товар</th>
+                                            <th>Количество</th>
+                                            <th>Цена</th>
+                                            <th>Сумма</th>
+                                            <th>Пользователь</th>
+                                            <th>Примечание</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactionsTable">
+                                        <!-- Заполнится через JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Отчеты -->
+                <div id="section-reports" class="section-content d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Отчеты и аналитика</h1>
+                            <p class="text-muted mb-0">Статистика и анализ продаж</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-gold me-2" onclick="generateReport('sales')">
+                                <i class="bi bi-file-earmark-text"></i> Отчет по продажам
+                            </button>
+                            <button class="btn btn-success" onclick="generateReport('inventory')">
+                                <i class="bi bi-box"></i> Остатки на складе
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Графики отчетов -->
+                    <div class="row mb-4">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card card-custom">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Продажи по категориям</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="categoriesChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card card-custom">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Топ товаров</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container">
+                                        <canvas id="topProductsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card card-custom">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Детальная статистика</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 text-center mb-3">
+                                            <h2 class="text-primary" id="totalSales">0 ₽</h2>
+                                            <p class="text-muted">Общий объем продаж</p>
+                                        </div>
+                                        <div class="col-md-4 text-center mb-3">
+                                            <h2 class="text-success" id="avgTransaction">0 ₽</h2>
+                                            <p class="text-muted">Средний чек</p>
+                                        </div>
+                                        <div class="col-md-4 text-center mb-3">
+                                            <h2 class="text-warning" id="profitMargin">0%</h2>
+                                            <p class="text-muted">Рентабельность</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Профиль -->
+                <div id="section-profile" class="section-content d-none">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card card-custom">
+                                <div class="card-header card-header-custom text-center">
+                                    <h5 class="card-title mb-0">Профиль пользователя</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center mb-4">
+                                        <div class="user-avatar-large mx-auto mb-3">
+                                            <i class="bi bi-person-circle" style="font-size: 80px;"></i>
+                                        </div>
+                                        <h3 id="profileName">Администратор</h3>
+                                        <p class="text-muted" id="profileEmail">admin@goldstandard.ru</p>
+                                        <span class="badge bg-warning" id="profileRole">Администратор</span>
+                                    </div>
+
+                                    <form id="profileForm">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Имя</label>
+                                                <input type="text" class="form-control form-control-custom" 
+                                                       id="profileFirstName" value="Иван">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Фамилия</label>
+                                                <input type="text" class="form-control form-control-custom" 
+                                                       id="profileLastName" value="Петров">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control form-control-custom" 
+                                                   id="profileEmailInput" value="admin@goldstandard.ru">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Телефон</label>
+                                            <input type="tel" class="form-control form-control-custom" 
+                                                   id="profilePhone" value="+7 (999) 123-45-67">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">О себе</label>
+                                            <textarea class="form-control form-control-custom" 
+                                                      id="profileBio" rows="3">Системный администратор ювелирного магазина</textarea>
+                                        </div>
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-gold">
+                                                <i class="bi bi-save"></i> Сохранить изменения
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <hr class="my-4">
+
+                                    <h5 class="mb-3">Безопасность</h5>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-warning" onclick="showChangePasswordModal()">
+                                            <i class="bi bi-shield-lock"></i> Сменить пароль
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="showDeleteAccountModal()">
+                                            <i class="bi bi-trash"></i> Удалить аккаунт
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Настройки -->
+                <div id="section-settings" class="section-content d-none">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card card-custom mb-4">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Настройки системы</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="settingsForm">
+                                        
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Валюта</label>
+                                            <select class="form-select form-control-custom" id="currency">
+                                                <option value="RUB">Российский рубль (₽)</option>
+                                                <option value="USD">Доллар США ($)</option>
+                                                <option value="EUR">Евро (€)</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Язык интерфейса</label>
+                                            <select class="form-select form-control-custom" id="language">
+                                                <option value="ru">Русский</option>
+                                                <option value="en">English</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Формат даты</label>
+                                            <select class="form-select form-control-custom" id="dateFormat">
+                                                <option value="ru-RU">ДД.ММ.ГГГГ</option>
+                                                <option value="en-US">ММ/ДД/ГГГГ</option>
+                                            </select>
+                                        </div>
+
+                                        
+                                        
+                                       
+
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-gold">
+                                                <i class="bi bi-save"></i> Сохранить настройки
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card card-custom">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Системная информация</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Версия системы:</strong> 1.0.0
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Последнее обновление:</strong> 14.12.2025
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Всего пользователей:</strong> 921
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Всего товаров:</strong> <span id="settingsTotalProducts">8</span>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Размер базы данных:</strong> 9.2 МБ
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <strong>Статус:</strong> <span class="text-success">Работает нормально</span>
+                                        </div>
+                                    </div>
+                                    
+                                   
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card card-custom mb-4">
+                                <div class="card-header card-header-custom">
+                                    <h5 class="card-title mb-0">Внешний вид</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Тема</label>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span>Светлая</span>
+                                            <label class="theme-switch">
+                                                <input type="checkbox" id="themeToggleSettings">
+                                                <span class="theme-slider"></span>
+                                            </label>
+                                            <span>Темная</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Размер шрифта</label>
+                                        <select class="form-select form-control-custom" id="fontSize">
+                                            <option value="small">Меньший</option>
+                                            <option value="normal" selected>Обычный</option>
+                                            <option value="large">Больший</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Цвет акцента</label>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm" style="background: #d4af37; width: 30px; height: 30px;" 
+                                                    onclick="setAccentColor('#d4af37')"></button>
+                                            <button class="btn btn-sm" style="background: #4361ee; width: 30px; height: 30px;" 
+                                                    onclick="setAccentColor('#4361ee')"></button>
+                                            <button class="btn btn-sm" style="background: #2a9d8f; width: 30px; height: 30px;" 
+                                                    onclick="setAccentColor('#2a9d8f')"></button>
+                                            <button class="btn btn-sm" style="background: #e76f51; width: 30px; height: 30px;" 
+                                                    onclick="setAccentColor('#e76f51')"></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="btn btn-outline-light w-100" onclick="resetAppearance()">
+                                        <i class="bi bi-arrow-clockwise"></i> Сбросить настройки
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования товара -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalTitle">Добавить товар</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="productId">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">Название товара</label>
+                                <input type="text" class="form-control" id="productName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">Категория</label>
+                                <select class="form-select" id="productCategory" required>
+                                    <option value="">Выберите категорию</option>
+                                    <option value="Кольцо">Кольцо</option>
+                                    <option value="Серьги">Серьги</option>
+                                    <option value="Цепочка">Цепочка</option>
+                                    <option value="Браслет">Браслет</option>
+                                    <option value="Кулон">Кулон</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">Материал</label>
+                                <select class="form-select" id="productMaterial" required>
+                                    <option value="">Выберите материал</option>
+                                    <option value="Золото">Золото</option>
+                                    <option value="Серебро">Серебро</option>
+                                    <option value="Платина">Платина</option>
+                                    <option value="Белое золото">Белое золото</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Проба</label>
+                                <select class="form-select" id="productCarat">
+                                    <option value="">Выберите пробу</option>
+                                    <option value="585">585 (14K)</option>
+                                    <option value="750">750 (18K)</option>
+                                    <option value="925">925 (Стерлинг)</option>
+                                    <option value="950">950 (Платина)</option>
+                                    <option value="999">999 (Чистое)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">Вес (гр)</label>
+                                <input type="number" class="form-control" id="productWeight" step="0.1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">Цена (₽)</label>
+                                <input type="number" class="form-control" id="productPrice" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">Количество</label>
+                                <input type="number" class="form-control" id="productQuantity" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">Себестоимость (₽)</label>
+                                <input type="number" class="form-control" id="productCost" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">Минимальный остаток</label>
+                                <select class="form-select" id="productMinQuantity" required>
+                                    <option value="1">1 шт.</option>
+                                    <option value="2" selected>2 шт.</option>
+                                    <option value="3">3 шт.</option>
+                                    <option value="5">5 шт.</option>
+                                    <option value="10">10 шт.</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" id="productDescription" rows="3" 
+                                      placeholder="Опишите изделие, особенности, камни и т.д."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Поля отмеченные <span class="text-danger">*</span> обязательны для заполнения
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-gold" id="saveProductBtn">Сохранить товар</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно операции -->
+    <div class="modal fade" id="transactionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transactionModalTitle">Новая операция</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transactionForm">
+                        <input type="hidden" id="transactionType">
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">Тип операции</label>
+                            <div class="alert alert-light">
+                                <div id="operationTypeInfo">
+                                    <!-- Информация о типе операции будет заполнена динамически -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">Товар</label>
+                            <select class="form-select" id="transactionProduct" required>
+                                <option value="">Выберите товар</option>
+                            </select>
+                            <div class="form-text" id="productStockInfo"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">Количество</label>
+                            <input type="number" class="form-control" id="transactionQuantity" required>
+                            <div class="form-text" id="quantityInfo"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">Цена за единицу (₽)</label>
+                            <input type="number" class="form-control" id="transactionPrice" required>
+                            <div class="form-text" id="priceInfo"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Примечание</label>
+                            <textarea class="form-control" id="transactionNote" rows="3" 
+                                      placeholder="Укажите детали операции (клиент, причина списания и т.д.)"></textarea>
+                        </div>
+                        
+                        <div class="alert alert-warning" id="transactionWarning" style="display: none;">
+                            <i class="bi bi-exclamation-triangle"></i> <span id="warningText"></span>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Поля отмеченные <span class="text-danger">*</span> обязательны для заполнения
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" id="saveTransactionBtn">Подтвердить операцию</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление - ИСПРАВЛЕНО -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="supabase.js"></script>
+    
+    <script>
+         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let currentUser = null;
+        let products = [];
+        let transactions = [];
+        let currentSection = 'dashboard';
+        let salesChart = null;
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Проверка авторизации через Supabase
+            await checkAuth();
+            
+            // Настройка обработчиков
+            setupEventListeners();
+            
+            // Обновление даты и времени
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Загрузка начальной секции
+            showSection('dashboard');
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ТЕМЫ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем сохраненную тему
+    loadTheme();
+    
+    // Привязываем обработчики переключателей темы
+    setupThemeSwitchers();
+    
+    // Загружаем сохраненный цвет акцента
+    const savedAccentColor = localStorage.getItem('accentColor');
+    if (savedAccentColor) {
+        document.documentElement.style.setProperty('--primary', savedAccentColor);
+    }
+    
+    // Загружаем сохраненный размер шрифта
+    const savedFontSize = localStorage.getItem('fontSize');
+    if (savedFontSize) {
+        updateFontSize(savedFontSize);
+    }
+});
+
+        // ========== ОБРАБОТЧИК ВЫХОДА ==========
+async function logout() {
+    if (confirm('Вы уверены, что хотите выйти из системы?')) {
+        try {
+            const result = await SupabaseAPI.auth.logout();
+            if (result.success) {
+                window.location.href = 'index.html';
+            } else {
+                showNotification('Ошибка при выходе: ' + (result.error || 'Неизвестная ошибка'), 'error');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            window.location.href = 'index.html';
+        }
+    }
+}
+
+        // ========== АВТОРИЗАЦИЯ С SUPABASE ==========
+
+        async function checkAuth() {
+    try {
+        console.log('Checking auth session...');
+        
+        // Используем НАШУ систему сессий
+        const result = await SupabaseAPI.auth.getSession();
+        
+        if (!result.success || !result.user) {
+            console.log('No valid session, redirecting to login');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        currentUser = result.user;
+        console.log('User authenticated:', currentUser.email);
+        
+        // Обновляем отображение
+        document.getElementById('currentUserName').textContent = 
+            currentUser.full_name || currentUser.username;
+        document.getElementById('currentUserName').innerHTML = 
+            `<strong>${currentUser.full_name || currentUser.username}</strong><br>
+             <small class="text-muted">${currentUser.email}</small>`;
+            
+        // Загружаем данные
+        await loadInitialData();
+        
+    } catch (error) {
+        console.error('Auth error:', error);
+        window.location.href = 'index.html';
+    }
+}
+
+        async function loadInitialData() {
+            try {
+                // Загружаем товары
+                const productsResult = await SupabaseAPI.products.getProducts();
+                if (productsResult.success) {
+                    products = productsResult.data;
+                }
+                
+                // Загружаем транзакции
+                const transactionsResult = await SupabaseAPI.transactions.getTransactions();
+                if (transactionsResult.success) {
+                    transactions = transactionsResult.data;
+                }
+                
+            } catch (error) {
+                console.error('Load data error:', error);
+                showNotification('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        async function logout() {
+    if (confirm('Вы уверены, что хотите выйти из системы?')) {
+        const result = await SupabaseAPI.auth.logout();
+        if (result.success) {
+            window.location.href = 'index.html';
+        }
+    }
+}
+
+        // ========== API ФУНКЦИИ ==========
+
+        async function loadProductsTable() {
+            try {
+                const result = await SupabaseAPI.products.getProducts();
+                if (result.success) {
+                    products = result.data;
+                    
+                    const tbody = document.getElementById('productsTable');
+                    tbody.innerHTML = '';
+                    
+                    products.forEach(product => {
+                        const row = createProductRow(product);
+                        tbody.appendChild(row);
+                    });
+                    
+                    showNotification(`Загружено ${products.length} товаров`, 'success');
+                }
+            } catch (error) {
+                showNotification('Ошибка загрузки товаров', 'error');
+            }
+        }
+
+        async function saveProduct(productData) {
+            try {
+                const result = await SupabaseAPI.products.createProduct(productData, currentUser.id);
+                if (result.success) {
+                    showNotification('Товар успешно сохранен в базе данных', 'success');
+                    await loadProductsTable();
+                    await updateDashboardStats();
+                    return true;
+                } else {
+                    showNotification(result.error, 'error');
+                    return false;
+                }
+            } catch (error) {
+                showNotification('Ошибка сохранения товара', 'error');
+                return false;
+            }
+        }
+
+        async function updateProduct(id, updates) {
+            try {
+                const result = await SupabaseAPI.products.updateProduct(id, updates);
+                if (result.success) {
+                    showNotification('Товар успешно обновлен', 'success');
+                    await loadProductsTable();
+                    await updateDashboardStats();
+                    return true;
+                } else {
+                    showNotification(result.error, 'error');
+                    return false;
+                }
+            } catch (error) {
+                showNotification('Ошибка обновления товара', 'error');
+                return false;
+            }
+        }
+
+        async function deleteProduct(id) {
+            try {
+                const result = await SupabaseAPI.products.deleteProduct(id);
+                if (result.success) {
+                    showNotification('Товар успешно удален', 'success');
+                    await loadProductsTable();
+                    await updateDashboardStats();
+                } else {
+                    showNotification(result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Ошибка удаления товара', 'error');
+            }
+        }
+
+        async function saveTransaction(transactionData) {
+            try {
+                const result = await SupabaseAPI.transactions.createTransaction(transactionData, currentUser.id);
+                if (result.success) {
+                    showNotification('Операция успешно сохранена', 'success');
+                    await loadTransactionsTable();
+                    await updateDashboardStats();
+                    return true;
+                } else {
+                    showNotification(result.error, 'error');
+                    return false;
+                }
+            } catch (error) {
+                showNotification('Ошибка сохранения операции', 'error');
+                return false;
+            }
+        }
+
+        async function updateDashboardStats() {
+            try {
+                const statsResult = await SupabaseAPI.products.getProductsStats();
+                const transactionsResult = await SupabaseAPI.transactions.getTransactionsStats('month');
+                
+                if (statsResult.success) {
+                    const stats = statsResult.data;
+                    document.getElementById('totalValue').textContent = formatPrice(stats.totalValue);
+                    document.getElementById('totalProducts').textContent = stats.totalProducts;
+                    document.getElementById('lowStock').textContent = stats.lowStock;
+                }
+                
+                if (transactionsResult.success) {
+                    const transStats = transactionsResult.data;
+                    document.getElementById('monthlySales').textContent = formatPrice(transStats.totalSales);
+                }
+                
+            } catch (error) {
+                console.error('Update stats error:', error);
+            }
+        }
+        // ========== НАВИГАЦИЯ ==========
+
+        function showSection(section) {
+            // Скрыть все секции
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.add('d-none');
+                el.classList.remove('fade-in');
+            });
+            
+            // Убрать активный класс у всех пунктов меню
+            document.querySelectorAll('.sidebar-menu a').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Показать выбранную секцию
+            const sectionEl = document.getElementById(`section-${section}`);
+            if (sectionEl) {
+                sectionEl.classList.remove('d-none');
+                sectionEl.classList.add('fade-in');
+                currentSection = section;
+                
+                // Активировать пункт меню
+                const menuItem = document.getElementById(`menu${section.charAt(0).toUpperCase() + section.slice(1)}`);
+                if (menuItem) {
+                    menuItem.classList.add('active');
+                }
+                
+                // Загрузить данные для секции
+                loadSectionData(section);
+            }
+        }
+
+        function loadSectionData(section) {
+            switch(section) {
+                case 'dashboard':
+                    updateDashboardStats();
+                    loadRecentProducts();
+                    break;
+                case 'products':
+                    loadProductsTable();
+                    break;
+                case 'transactions':
+                    loadTransactionsTable();
+                    break;
+                case 'reports':
+                    updateReportsStats();
+                    break;
+                case 'profile':
+                    loadProfileData();
+                    break;
+                case 'settings':
+                    loadSettingsData();
+                    break;
+            }
+        }
+
+        // ========== ДАШБОРД ==========
+
+        function updateDashboardStats() {
+            const totalValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+            const monthlySales = transactions
+                .filter(t => t.type === 'sale' && new Date(t.date).getMonth() === new Date().getMonth())
+                .reduce((sum, t) => sum + t.total, 0);
+            const lowStock = products.filter(p => getProductStatus(p) === 'low_stock').length;
+            
+            document.getElementById('totalValue').textContent = formatPrice(totalValue);
+            document.getElementById('totalProducts').textContent = products.length;
+            document.getElementById('monthlySales').textContent = formatPrice(monthlySales);
+            document.getElementById('lowStock').textContent = lowStock;
+        }
+
+        function loadRecentProducts() {
+            const tbody = document.getElementById('recentProductsTable');
+            tbody.innerHTML = '';
+            
+            const recentProducts = [...products]
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 5);
+            
+            recentProducts.forEach(product => {
+                const status = getProductStatus(product);
+                const row = `
+                    <tr>
+                        <td><strong>${product.name}</strong></td>
+                        <td><span class="badge bg-secondary">${product.category}</span></td>
+                        <td>${product.material}${product.carat ? ` ${product.carat}` : ''}</td>
+                        <td>${formatPrice(product.price)}</td>
+                        <td>
+                            <span class="badge ${getQuantityBadgeClass(product.quantity, product.minQuantity)}">
+                                ${product.quantity} шт.
+                            </span>
+                            <div class="stock-indicator">
+                                <div class="stock-fill ${getStockFillClass(product.quantity, product.minQuantity)}" 
+                                     style="width: ${Math.min((product.quantity / (product.minQuantity * 3)) * 100, 100)}%"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${status === 'available' ? 'bg-success' : 
+                                            status === 'low_stock' ? 'bg-warning' : 'bg-danger'}">
+                                ${getStatusText(status)}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function initCharts() {
+            const salesCtx = document.getElementById('salesChart');
+            const categoriesCtx = document.getElementById('categoriesChart');
+            const topProductsCtx = document.getElementById('topProductsChart');
+            
+            if (salesCtx) {
+                salesChart = new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
+                        datasets: [{
+                            label: 'Продажи (₽)',
+                            data: [65000, 89000, 102000, 78000, 95000, 110000],
+                            borderColor: '#d4af37',
+                            backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatPrice(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            if (categoriesCtx) {
+                categoriesChart = new Chart(categoriesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Кольца', 'Серьги', 'Цепочки', 'Браслеты', 'Кулоны'],
+                        datasets: [{
+                            data: [35, 25, 20, 10, 10],
+                            backgroundColor: [
+                                '#d4af37',
+                                '#4361ee',
+                                '#2a9d8f',
+                                '#f4a261',
+                                '#e76f51'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            if (topProductsCtx) {
+                topProductsChart = new Chart(topProductsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Кольцо', 'Серьги', 'Цепочка', 'Браслет', 'Кулон'],
+                        datasets: [{
+                            label: 'Продажи (шт.)',
+                            data: [15, 12, 8, 5, 10],
+                            backgroundColor: '#d4af37'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // ========== ТОВАРЫ ==========
+
+        function loadProductsTable() {
+            const tbody = document.getElementById('productsTable');
+            tbody.innerHTML = '';
+            
+            if (products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <i class="bi bi-inbox display-6 text-muted"></i>
+                            <p class="mt-3">Нет товаров</p>
+                            <button class="btn btn-gold mt-2" onclick="showAddProductModal()">
+                                <i class="bi bi-plus-circle"></i> Добавить первый товар
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            products.forEach(product => {
+                const status = getProductStatus(product);
+                const row = `
+                    <tr>
+                        <td>${product.id}</td>
+                        <td>
+                            <strong>${product.name}</strong>
+                            ${product.description ? `<br><small class="text-muted">${product.description.substring(0, 50)}${product.description.length > 50 ? '...' : ''}</small>` : ''}
+                        </td>
+                        <td><span class="badge bg-secondary">${product.category}</span></td>
+                        <td>
+                            ${product.material}${product.carat ? ` ${product.carat}` : ''}
+                            ${product.weight ? `<br><small class="text-muted">${product.weight}гр</small>` : ''}
+                        </td>
+                        <td>${product.weight}гр</td>
+                        <td>${formatPrice(product.price)}</td>
+                        <td>
+                            <span class="badge ${getQuantityBadgeClass(product.quantity, product.minQuantity)}">
+                                ${product.quantity} шт.
+                            </span>
+                            <div class="stock-indicator">
+                                <div class="stock-fill ${getStockFillClass(product.quantity, product.minQuantity)}" 
+                                     style="width: ${Math.min((product.quantity / (product.minQuantity * 3)) * 100, 100)}%"></div>
+                            </div>
+                            <small class="text-muted d-block">мин: ${product.minQuantity} шт.</small>
+                        </td>
+                        <td>
+                            <span class="badge ${status === 'available' ? 'bg-success' : 
+                                            status === 'low_stock' ? 'bg-warning' : 'bg-danger'}">
+                                ${getStatusText(status)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="editProduct(${product.id})" 
+                                        title="Редактировать">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="viewProduct(${product.id})" 
+                                        title="Просмотреть">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteProduct(${product.id})" 
+                                        title="Удалить">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function showAddProductModal() {
+            editingProductId = null;
+            
+            document.getElementById('productModalTitle').textContent = 'Добавить товар';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('saveProductBtn').textContent = 'Сохранить товар';
+            
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            modal.show();
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+            
+            editingProductId = id;
+            
+            // Заполняем форму данными товара
+            document.getElementById('productModalTitle').textContent = 'Редактировать товар';
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productName').value = product.name;
+            document.getElementById('productCategory').value = product.category;
+            document.getElementById('productMaterial').value = product.material;
+            document.getElementById('productCarat').value = product.carat || '';
+            document.getElementById('productWeight').value = product.weight;
+            document.getElementById('productPrice').value = product.price;
+            document.getElementById('productCost').value = product.cost || '';
+            document.getElementById('productQuantity').value = product.quantity;
+            document.getElementById('productMinQuantity').value = product.minQuantity || 2;
+            document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('saveProductBtn').textContent = 'Обновить товар';
+            
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            modal.show();
+            
+            showNotification('Товар загружен для редактирования', 'info');
+        }
+
+        function viewProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+            
+            // Показываем подробную информацию о товаре
+            const message = `
+                <strong>${product.name}</strong><br>
+                Категория: ${product.category}<br>
+                Материал: ${product.material} ${product.carat ? `(${product.carat})` : ''}<br>
+                Вес: ${product.weight}гр<br>
+                Цена: ${formatPrice(product.price)}<br>
+                Количество: ${product.quantity} шт.<br>
+                Статус: ${getStatusText(getProductStatus(product))}<br>
+                ${product.description ? `Описание: ${product.description}` : ''}
+            `;
+            
+            alert(message);
+        }
+
+        // Модифицируем существующую функцию saveProduct для работы с Supabase
+async function saveProduct() {
+    const id = document.getElementById('productId').value;
+    const name = document.getElementById('productName').value.trim();
+    const category = document.getElementById('productCategory').value;
+    const material = document.getElementById('productMaterial').value;
+    const carat = document.getElementById('productCarat').value;
+    const weight = parseFloat(document.getElementById('productWeight').value);
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const cost = parseFloat(document.getElementById('productCost').value);
+    const quantity = parseInt(document.getElementById('productQuantity').value);
+    const minQuantity = parseInt(document.getElementById('productMinQuantity').value);
+    const description = document.getElementById('productDescription').value.trim();
+    
+    // Валидация (оставляем вашу существующую)
+    if (!name || !category || !material || !weight || !price || !cost || !quantity || !minQuantity) {
+        showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    if (weight <= 0 || price <= 0 || cost <= 0 || quantity < 0 || minQuantity <= 0) {
+        showNotification('Значения должны быть положительными числами', 'error');
+        return;
+    }
+    
+    // Подготавливаем данные для Supabase
+    const productData = {
+        name,
+        category,
+        material,
+        carat: carat ? parseInt(carat) : null,
+        weight,
+        price,
+        cost,
+        quantity,
+        min_quantity: minQuantity, // Используем snake_case для Supabase
+        description
+    };
+    
+    // Показываем индикатор загрузки
+    const saveBtn = document.querySelector('#productModal .btn-gold');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Сохранение...';
+    saveBtn.disabled = true;
+    
+    try {
+        let result;
+        
+        if (id) {
+            // Редактирование существующего товара
+            result = await SupabaseAPI.products.updateProduct(id, productData);
+            
+            if (result.success) {
+                showNotification('Товар успешно обновлен в базе данных!', 'success');
+                
+                // Обновляем локальные данные
+                const index = products.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    products[index] = { ...products[index], ...productData, id: id };
+                }
+            } else {
+                showNotification(result.error || 'Ошибка обновления товара', 'error');
+                return;
+            }
+        } else {
+            // Создание нового товара
+            result = await SupabaseAPI.products.createProduct(productData, currentUser.id);
+            
+            if (result.success) {
+                showNotification('Товар успешно добавлен в базу данных!', 'success');
+                
+                // Добавляем новый товар в локальный массив
+                products.push(result.data);
+            } else {
+                showNotification(result.error || 'Ошибка создания товара', 'error');
+                return;
+            }
+        }
+
+        // Закрываем модальное окно
+        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+
+        // Очищаем форму
+        document.getElementById('productForm').reset();
+
+        // Обновляем интерфейс
+        if (currentSection === 'products') {
+            loadProductsTable();
+        } else if (currentSection === 'dashboard') {
+            loadRecentProducts();
+        }
+        
+        // Обновляем статистику
+        updateDashboardStats();
+        updateReportsStats();
+
+    } catch (error) {
+        console.error('Save product error:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
+    } finally {
+        // Восстанавливаем кнопку
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+// Обновляем функцию editProduct для работы с Supabase
+async function editProduct(id) {
+    try {
+        // Получаем товар из базы данных
+        const result = await SupabaseAPI.products.getProductById(id);
+        
+        if (!result.success) {
+            showNotification('Товар не найден в базе данных', 'error');
+            return;
+        }
+
+        const product = result.data;
+        
+        // Заполняем форму данными товара
+        document.getElementById('productModalTitle').textContent = 'Редактировать товар';
+        document.getElementById('productId').value = product.id;
+        document.getElementById('productName').value = product.name;
+        document.getElementById('productCategory').value = product.category;
+        document.getElementById('productMaterial').value = product.material;
+        document.getElementById('productCarat').value = product.carat || '';
+        document.getElementById('productWeight').value = product.weight;
+        document.getElementById('productPrice').value = product.price;
+        document.getElementById('productCost').value = product.cost;
+        document.getElementById('productQuantity').value = product.quantity;
+        document.getElementById('productMinQuantity').value = product.min_quantity || 2;
+        document.getElementById('productDescription').value = product.description || '';
+        
+        // Обновляем текст кнопки
+        document.getElementById('saveProductBtn').textContent = 'Обновить товар';
+
+        // Открываем модальное окно
+        const modal = new bootstrap.Modal(document.getElementById('productModal'));
+        modal.show();
+
+        showNotification(`Товар "${product.name}" загружен для редактирования`, 'info');
+
+    } catch (error) {
+        console.error('Edit product error:', error);
+        showNotification('Ошибка загрузки товара', 'error');
+    }
+}
+
+// Обновляем функцию showAddProductModal
+function showAddProductModal() {
+    document.getElementById('productModalTitle').textContent = 'Добавить товар';
+    document.getElementById('productForm').reset();
+    document.getElementById('productId').value = '';
+    document.getElementById('saveProductBtn').textContent = 'Сохранить товар';
+    
+    // Автогенерация SKU (если нужно)
+    generateProductSKU();
+    
+    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    modal.show();
+}
+
+// Добавляем функцию генерации SKU (если используете поле SKU)
+function generateProductSKU() {
+    const category = document.getElementById('productCategory');
+    const skuField = document.getElementById('productSKU'); // если есть поле SKU
+    
+    if (category && skuField) {
+        const categoryMap = {
+            'Кольцо': 'RNG',
+            'Серьги': 'ERG', 
+            'Цепочка': 'CHN',
+            'Браслет': 'BRL',
+            'Кулон': 'PNT'
+        };
+        
+        if (category.value) {
+            const prefix = categoryMap[category.value] || 'JWL';
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            skuField.value = `${prefix}-${timestamp}-${random}`;
+        }
+    }
+}
+
+// Обработчик для автогенерации SKU при выборе категории
+document.getElementById('productCategory')?.addEventListener('change', generateProductSKU);
+
+// Обновляем функцию загрузки таблицы товаров
+async function loadProductsTable() {
+    try {
+        const tbody = document.getElementById('productsTable');
+        if (!tbody) return;
+        
+        // Показываем индикатор загрузки
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner"></div>
+                    <p class="mt-2">Загрузка товаров из базы данных...</p>
+                </td>
+            </tr>
+        `;
+        
+        // Получаем товары из Supabase
+        const result = await SupabaseAPI.products.getProducts();
+        
+        if (!result.success) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-danger">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <p>Ошибка загрузки данных: ${result.error || 'Неизвестная ошибка'}</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        products = result.data;
+        
+        if (products.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="bi bi-inbox display-6 text-muted"></i>
+                        <p class="mt-3">Нет товаров в базе данных</p>
+                        <button class="btn btn-gold mt-2" onclick="showAddProductModal()">
+                            <i class="bi bi-plus-circle"></i> Добавить первый товар
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Очищаем таблицу
+        tbody.innerHTML = '';
+        
+        // Заполняем таблицу
+        products.forEach(product => {
+            const status = getProductStatus(product);
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>${product.id.substring(0, 8)}...</td>
+                <td><strong>${product.name}</strong></td>
+                <td><span class="badge bg-secondary">${product.category}</span></td>
+                <td>${product.material}${product.carat ? ` ${product.carat}` : ''}</td>
+                <td>${product.weight}гр</td>
+                <td>${formatPrice(product.price)}</td>
+                <td>
+                    <span class="badge ${getQuantityBadgeClass(product.quantity, product.min_quantity)}">
+                        ${product.quantity} шт.
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${status === 'available' ? 'bg-success' : 
+                                        status === 'low_stock' ? 'bg-warning' : 'bg-danger'}">
+                        ${getStatusText(status)}
+                    </span>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editProduct('${product.id}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deleteProduct('${product.id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+        
+        // Показываем уведомление о загрузке
+        showNotification(`Загружено ${products.length} товаров из базы данных`, 'success');
+        
+    } catch (error) {
+        console.error('Load products table error:', error);
+        showNotification('Ошибка загрузки товаров', 'error');
+    }
+}
+
+// Обновляем функцию удаления товара
+async function deleteProduct(id) {
+    try {
+        // Находим товар для показа названия
+        const product = products.find(p => p.id === id);
+        if (!product) {
+            showNotification('Товар не найден', 'error');
+            return;
+        }
+        
+        if (!confirm(`Вы уверены, что хотите удалить товар "${product.name}"?`)) {
+            return;
+        }
+        
+        // Проверяем транзакции (если нужно)
+        const hasTransactions = transactions.some(t => t.product_id === id);
+        if (hasTransactions) {
+            if (!confirm('У этого товара есть история операций. Удаление может повлиять на отчетность. Продолжить?')) {
+                return;
+            }
+        }
+        
+        // Удаляем из Supabase
+        const result = await SupabaseAPI.products.deleteProduct(id);
+        
+        if (result.success) {
+            // Удаляем из локального массива
+            products = products.filter(p => p.id !== id);
+            
+            showNotification(`Товар "${product.name}" удален из базы данных`, 'warning');
+            
+            // Обновляем UI
+            if (currentSection === 'products') {
+                loadProductsTable();
+            } else if (currentSection === 'dashboard') {
+                loadRecentProducts();
+            }
+            
+            updateDashboardStats();
+            
+        } else {
+            showNotification(result.error || 'Ошибка удаления товара', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Delete product error:', error);
+        showNotification('Ошибка удаления товара', 'error');
+    }
+}
+
+// Обновляем функцию загрузки последних товаров на дашборде
+async function loadRecentProducts() {
+    try {
+        const tbody = document.getElementById('recentProductsTable');
+        if (!tbody) return;
+        
+        // Получаем товары из Supabase (последние 5)
+        const result = await SupabaseAPI.products.getProducts();
+        
+        if (result.success) {
+            const recentProducts = result.data
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 5);
+            
+            tbody.innerHTML = '';
+            
+            recentProducts.forEach(product => {
+                const status = getProductStatus(product);
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <tr>
+                        <td><strong>${product.name}</strong></td>
+                        <td><span class="badge bg-secondary">${product.category}</span></td>
+                        <td>${product.material}${product.carat ? ` ${product.carat}` : ''}</td>
+                        <td>${formatPrice(product.price)}</td>
+                        <td>
+                            <span class="badge ${getQuantityBadgeClass(product.quantity, product.min_quantity)}">
+                                ${product.quantity} шт.
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${status === 'available' ? 'bg-success' : 
+                                                status === 'low_stock' ? 'bg-warning' : 'bg-danger'}">
+                                ${getStatusText(status)}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+    } catch (error) {
+        console.error('Load recent products error:', error);
+    }
+}
+
+// Обновляем статистику дашборда
+async function updateDashboardStats() {
+    try {
+        // Получаем статистику из Supabase
+        const statsResult = await SupabaseAPI.products.getProductsStats();
+        
+        if (statsResult.success) {
+            const stats = statsResult.data;
+            document.getElementById('totalValue').textContent = formatPrice(stats.totalValue);
+            document.getElementById('totalProducts').textContent = stats.totalProducts;
+            document.getElementById('lowStock').textContent = stats.lowStock;
+        }
+        
+        // Получаем статистику продаж
+        const salesResult = await SupabaseAPI.transactions.getTransactionsStats('month');
+        if (salesResult.success) {
+            document.getElementById('monthlySales').textContent = formatPrice(salesResult.data.totalSales);
+        }
+        
+    } catch (error) {
+        console.error('Update dashboard stats error:', error);
+    }
+}
+
+// Вспомогательные функции для работы со статусами
+function getProductStatus(product) {
+    if (product.quantity === 0) return 'out_of_stock';
+    if (product.quantity <= product.min_quantity) return 'low_stock';
+    return 'available';
+}
+
+function getStatusText(status) {
+    const statusMap = {
+        'available': 'В наличии',
+        'low_stock': 'Мало осталось',
+        'out_of_stock': 'Нет в наличии'
+    };
+    return statusMap[status] || status;
+}
+
+function getQuantityBadgeClass(quantity, minQuantity) {
+    if (quantity === 0) return 'bg-danger';
+    if (quantity <= minQuantity) return 'bg-warning';
+    return 'bg-success';
+}
+
+function getStockFillClass(quantity, minQuantity) {
+    if (quantity === 0) return 'stock-danger';
+    if (quantity <= minQuantity) return 'stock-warning';
+    return 'stock-good';
+}
+
+function formatPrice(amount) {
+    return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+// Функция просмотра товара
+async function viewProduct(id) {
+    try {
+        const result = await SupabaseAPI.products.getProductById(id);
+        
+        if (!result.success) {
+            showNotification('Товар не найден', 'error');
+            return;
+        }
+        
+        const product = result.data;
+        
+        const message = `
+            <strong>${product.name}</strong><br>
+            <small class="text-muted">SKU: ${product.sku || 'не указан'}</small><br>
+            Категория: ${product.category}<br>
+            Материал: ${product.material} ${product.carat ? `(${product.carat})` : ''}<br>
+            Вес: ${product.weight}гр<br>
+            Цена: ${formatPrice(product.price)}<br>
+            Себестоимость: ${formatPrice(product.cost)}<br>
+            Количество: ${product.quantity} шт. (мин: ${product.min_quantity} шт.)<br>
+            Статус: ${getStatusText(getProductStatus(product))}<br>
+            ${product.description ? `Описание: ${product.description}` : ''}<br>
+            <small class="text-muted">Создан: ${new Date(product.created_at).toLocaleDateString('ru-RU')}</small>
+        `;
+        
+        showNotification(message, 'info');
+        
+    } catch (error) {
+        console.error('View product error:', error);
+        showNotification('Ошибка загрузки товара', 'error');
+    }
+}
+
+        // ========== ДВИЖЕНИЕ ТОВАРОВ ==========
+
+        function loadTransactionsTable() {
+            const tbody = document.getElementById('transactionsTable');
+            tbody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="bi bi-arrow-left-right display-6 text-muted"></i>
+                            <p class="mt-3">Нет операций</p>
+                            <button class="btn btn-gold mt-2" onclick="showAddTransactionModal('receipt')">
+                                <i class="bi bi-box-arrow-in-down"></i> Добавить первую операцию
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Сортируем по дате (новые сверху)
+            const sortedTransactions = [...transactions].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+            
+            sortedTransactions.forEach(transaction => {
+                const typeText = getTransactionTypeText(transaction.type);
+                const typeClass = getTransactionTypeClass(transaction.type);
+                const date = new Date(transaction.date).toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const row = `
+                    <tr>
+                        <td>${date}</td>
+                        <td><span class="badge ${typeClass}">${typeText}</span></td>
+                        <td>${transaction.productName}</td>
+                        <td>${transaction.quantity}</td>
+                        <td>${formatPrice(transaction.price)}</td>
+                        <td><strong>${formatPrice(transaction.total)}</strong></td>
+                        <td>${transaction.userName}</td>
+                        <td>${transaction.note || '-'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function showAddTransactionModal(type) {
+            transactionType = type;
+            
+            const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+            const title = document.getElementById('transactionModalTitle');
+            const productSelect = document.getElementById('transactionProduct');
+            const operationInfo = document.getElementById('operationTypeInfo');
+            
+            // Установка заголовка
+            title.textContent = getTransactionModalTitle(type);
+            
+            // Информация о типе операции
+            operationInfo.innerHTML = getTransactionTypeDescription(type);
+            
+            // Заполнение списка товаров
+            productSelect.innerHTML = '<option value="">Выберите товар</option>';
+            products.forEach(product => {
+                if (type === 'sale' && product.quantity === 0) {
+                    // Пропускаем товары с нулевым остатком для продажи
+                    return;
+                }
+                
+                const option = document.createElement('option');
+                option.value = product.id;
+                option.textContent = `${product.name} (остаток: ${product.quantity} шт., цена: ${formatPrice(product.price)})`;
+                productSelect.appendChild(option);
+            });
+            
+            // Сброс формы
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionType').value = type;
+            document.getElementById('transactionWarning').style.display = 'none';
+            
+            // Обновление информации о товаре
+            updateTransactionProductInfo();
+            
+            // Изменение текста кнопки сохранения
+            document.getElementById('saveTransactionBtn').textContent = 
+                type === 'sale' ? 'Подтвердить продажу' : 
+                type === 'receipt' ? 'Подтвердить поступление' : 'Подтвердить списание';
+            
+            // Изменение цвета кнопки
+            const btn = document.getElementById('saveTransactionBtn');
+            btn.className = btn.className.replace(/btn-\w+/, `btn-${getTransactionButtonColor(type)}`);
+            
+            modal.show();
+        }
+
+        function updateTransactionProductInfo() {
+            const productId = document.getElementById('transactionProduct').value;
+            const product = products.find(p => p.id === parseInt(productId));
+            const productInfo = document.getElementById('productStockInfo');
+            const priceInput = document.getElementById('transactionPrice');
+            
+            if (product) {
+                // Обновляем информацию о товаре
+                productInfo.innerHTML = `
+                    Остаток: <strong>${product.quantity} шт.</strong> | 
+                    Мин. остаток: <strong>${product.minQuantity} шт.</strong> | 
+                    Текущая цена: <strong>${formatPrice(product.price)}</strong>
+                `;
+                
+                // Устанавливаем цену по умолчанию
+                priceInput.value = product.price;
+                
+                // Обновляем расчеты
+                updateTransactionCalculations();
+            } else {
+                productInfo.innerHTML = 'Выберите товар для просмотра информации';
+                priceInput.value = '';
+            }
+        }
+
+        function updateTransactionCalculations() {
+            const productId = document.getElementById('transactionProduct').value;
+            const quantity = parseInt(document.getElementById('transactionQuantity').value) || 0;
+            const price = parseInt(document.getElementById('transactionPrice').value) || 0;
+            const product = products.find(p => p.id === parseInt(productId));
+            const quantityInfo = document.getElementById('quantityInfo');
+            const priceInfo = document.getElementById('priceInfo');
+            const warning = document.getElementById('transactionWarning');
+            const warningText = document.getElementById('warningText');
+            
+            if (product) {
+                // Информация о количестве
+                let quantityMessage = '';
+                if (transactionType === 'sale') {
+                    if (quantity > product.quantity) {
+                        quantityMessage = `<span class="text-danger">Недостаточно товара! Доступно: ${product.quantity} шт.</span>`;
+                        warning.style.display = 'block';
+                        warningText.textContent = `Внимание! Вы пытаетесь продать ${quantity} шт., но на складе только ${product.quantity} шт.`;
+                    } else if (product.quantity - quantity <= product.minQuantity) {
+                        quantityMessage = `<span class="text-warning">После операции останется ${product.quantity - quantity} шт. (ниже минимального остатка)</span>`;
+                        warning.style.display = 'block';
+                        warningText.textContent = `Внимание! После этой операции остаток опустится ниже минимального (${product.minQuantity} шт.)`;
+                    } else {
+                        quantityMessage = `После операции останется: ${product.quantity - quantity} шт.`;
+                        warning.style.display = 'none';
+                    }
+                } else if (transactionType === 'receipt') {
+                    quantityMessage = `После поступления будет: ${product.quantity + quantity} шт.`;
+                    warning.style.display = 'none';
+                } else {
+                    if (quantity > product.quantity) {
+                        quantityMessage = `<span class="text-danger">Нельзя списать больше чем есть на складе! Доступно: ${product.quantity} шт.</span>`;
+                        warning.style.display = 'block';
+                        warningText.textContent = `Нельзя списать ${quantity} шт., на складе только ${product.quantity} шт.`;
+                    } else {
+                        quantityMessage = `После списания останется: ${product.quantity - quantity} шт.`;
+                        warning.style.display = 'none';
+                    }
+                }
+                quantityInfo.innerHTML = quantityMessage;
+                
+                // Информация о цене
+                const total = quantity * price;
+                priceInfo.innerHTML = `Общая сумма: <strong>${formatPrice(total)}</strong>`;
+                
+                if (transactionType === 'sale' && price < product.cost) {
+                    priceInfo.innerHTML += `<br><span class="text-danger">Продажа ниже себестоимости! Себестоимость: ${formatPrice(product.cost)}</span>`;
+                }
+            } else {
+                quantityInfo.innerHTML = '';
+                priceInfo.innerHTML = '';
+                warning.style.display = 'none';
+            }
+        }
+
+        function saveTransaction() {
+            const productId = parseInt(document.getElementById('transactionProduct').value);
+            const quantity = parseInt(document.getElementById('transactionQuantity').value);
+            const price = parseInt(document.getElementById('transactionPrice').value);
+            const note = document.getElementById('transactionNote').value.trim();
+            const type = transactionType;
+            
+            // Валидация
+            if (!productId || !quantity || !price) {
+                showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            if (quantity <= 0 || price <= 0) {
+                showNotification('Количество и цена должны быть положительными числами', 'error');
+                return;
+            }
+            
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+            
+            // Проверка доступности товара
+            if (type === 'sale' && quantity > product.quantity) {
+                showNotification(`Недостаточно товара на складе. Доступно: ${product.quantity} шт.`, 'error');
+                return;
+            }
+            
+            if (type === 'write_off' && quantity > product.quantity) {
+                showNotification(`Нельзя списать больше чем есть на складе. Доступно: ${product.quantity} шт.`, 'error');
+                return;
+            }
+            
+            // Обновление количества товара
+            if (type === 'sale' || type === 'write_off') {
+                product.quantity -= quantity;
+            } else if (type === 'receipt') {
+                product.quantity += quantity;
+            }
+            
+            // Обновление статуса товара
+            product.status = getProductStatusByQuantity(product.quantity, product.minQuantity);
+            
+            // Создание транзакции
+            const transaction = {
+                id: transactions.length > 0 ? Math.max(...transactions.map(t => t.id)) + 1 : 1,
+                type,
+                productId,
+                productName: product.name,
+                quantity,
+                price,
+                total: quantity * price,
+                userId: currentUser.id,
+                userName: currentUser.name,
+                note,
+                date: new Date().toISOString().replace('T', ' ').substr(0, 19)
+            };
+            
+            transactions.push(transaction);
+            
+            // Сохранение данных
+            localStorage.setItem('jewelry_products', JSON.stringify(products));
+            localStorage.setItem('jewelry_transactions', JSON.stringify(transactions));
+            
+            // Закрытие модального окна
+            bootstrap.Modal.getInstance(document.getElementById('transactionModal')).hide();
+            
+            // Показ уведомления
+            const typeText = getTransactionTypeText(type);
+            showNotification(`${typeText} на сумму ${formatPrice(transaction.total)} успешно сохранена!`, 'success');
+            
+            // Обновление данных
+            if (currentSection === 'transactions') {
+                loadTransactionsTable();
+            }
+            
+            updateDashboardStats();
+            updateReportsStats();
+            
+            if (currentSection === 'dashboard') {
+                loadRecentProducts();
+            }
+        }
+
+        function filterTransactions() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const type = document.getElementById('transactionTypeFilter').value;
+            
+            // Фильтрация транзакций
+            loadTransactionsTable(); // В реальном приложении здесь была бы фильтрация
+        }
+
+        // ========== ОТЧЕТЫ ==========
+
+        function updateReportsStats() {
+            const salesTransactions = transactions.filter(t => t.type === 'sale');
+            const totalSales = salesTransactions.reduce((sum, t) => sum + t.total, 0);
+            
+            const avgTransaction = salesTransactions.length > 0 ? 
+                totalSales / salesTransactions.length : 0;
+            
+            // Простой расчет рентабельности (пример)
+            const totalCost = products.reduce((sum, p) => sum + (p.cost * p.quantity), 0);
+            const totalValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+            const profitMargin = totalCost > 0 ? ((totalValue - totalCost) / totalCost * 100).toFixed(1) : 0;
+            
+            document.getElementById('totalSales').textContent = formatPrice(totalSales);
+            document.getElementById('avgTransaction').textContent = formatPrice(Math.round(avgTransaction));
+            document.getElementById('profitMargin').textContent = `${profitMargin}%`;
+            document.getElementById('settingsTotalProducts').textContent = products.length;
+        }
+
+        function generateReport(type) {
+            if (type === 'sales') {
+                showNotification('Отчет по продажам сгенерирован', 'success');
+            } else {
+                showNotification('Отчет по остаткам сгенерирован', 'success');
+            }
+        }
+
+        // ========== ПРОФИЛЬ ==========
+
+        function loadProfileData() {
+            const user = currentUser || demoUsers[0];
+            
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileRole').textContent = 
+                user.role === 'admin' ? 'Администратор' : 
+                user.role === 'manager' ? 'Менеджер' : 'Кассир';
+            
+            document.getElementById('profileFirstName').value = user.firstName || '';
+            document.getElementById('profileLastName').value = user.lastName || '';
+            document.getElementById('profileEmailInput').value = user.email || '';
+            document.getElementById('profilePhone').value = user.phone || '';
+            document.getElementById('profileBio').value = user.bio || '';
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            
+            // Обновление данных пользователя
+            currentUser.firstName = document.getElementById('profileFirstName').value;
+            currentUser.lastName = document.getElementById('profileLastName').value;
+            currentUser.name = `${currentUser.firstName} ${currentUser.lastName}`;
+            currentUser.email = document.getElementById('profileEmailInput').value;
+            currentUser.phone = document.getElementById('profilePhone').value;
+            currentUser.bio = document.getElementById('profileBio').value;
+            
+            // Сохранение
+            localStorage.setItem('jewelry_user', JSON.stringify(currentUser));
+            
+            // Обновление отображения
+            document.getElementById('currentUserName').textContent = currentUser.name;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            
+            showNotification('Профиль успешно обновлен', 'success');
+        }
+
+        function showChangePasswordModal() {
+            const newPassword = prompt('Введите новый пароль:');
+            if (newPassword && newPassword.length >= 6) {
+                showNotification('Пароль успешно изменен', 'success');
+            } else if (newPassword) {
+                showNotification('Пароль должен содержать не менее 6 символов', 'error');
+            }
+        }
+
+        function showDeleteAccountModal() {
+            if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить.')) {
+                showNotification('Удаление аккаунта будет реализовано в следующей версии', 'info');
+            }
+        }
+
+        // ========== НАСТРОЙКИ ==========
+
+        function loadSettingsData() {
+            // Загрузка сохраненных настроек
+            const savedSettings = localStorage.getItem('app_settings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                document.getElementById('storeName').value = settings.storeName || '';
+                document.getElementById('currency').value = settings.currency || 'RUB';
+                document.getElementById('language').value = settings.language || 'ru';
+                document.getElementById('dateFormat').value = settings.dateFormat || 'ru-RU';
+                document.getElementById('emailNotifications').checked = settings.emailNotifications !== false;
+                document.getElementById('lowStockNotifications').checked = settings.lowStockNotifications !== false;
+                document.getElementById('autoBackup').checked = settings.autoBackup !== false;
+            }
+        }
+
+        function saveSettings(e) {
+            e.preventDefault();
+            
+            const settings = {
+                storeName: document.getElementById('storeName').value,
+                currency: document.getElementById('currency').value,
+                language: document.getElementById('language').value,
+                dateFormat: document.getElementById('dateFormat').value,
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                lowStockNotifications: document.getElementById('lowStockNotifications').checked,
+                autoBackup: document.getElementById('autoBackup').checked
+            };
+            
+            localStorage.setItem('app_settings', JSON.stringify(settings));
+            showNotification('Настройки успешно сохранены', 'success');
+        }
+
+        function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSettings = document.getElementById('themeToggleSettings');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        if (themeToggle) themeToggle.checked = true;
+        if (themeToggleSettings) themeToggleSettings.checked = true;
+    } else {
+        document.body.classList.remove('dark-theme');
+        if (themeToggle) themeToggle.checked = false;
+        if (themeToggleSettings) themeToggleSettings.checked = false;
+    }
+}
+
+// Переключение темы
+function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    
+    const isDark = document.body.classList.contains('dark-theme');
+    
+    // Синхронизируем оба переключателя
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSettings = document.getElementById('themeToggleSettings');
+    
+    if (themeToggle) themeToggle.checked = isDark;
+    if (themeToggleSettings) themeToggleSettings.checked = isDark;
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    
+    // Показываем уведомление
+    showNotification(`Тема изменена на ${isDark ? 'темную' : 'светлую'}`, 'info');
+}
+
+// Привязка обработчиков к переключателям
+function setupThemeSwitchers() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSettings = document.getElementById('themeToggleSettings');
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('change', toggleTheme);
+    }
+    
+    if (themeToggleSettings) {
+        themeToggleSettings.addEventListener('change', toggleTheme);
+    }
+}
+
+        function setAccentColor(color) {
+    document.documentElement.style.setProperty('--primary', color);
+    localStorage.setItem('accentColor', color);
+    showNotification('Цвет акцента изменен', 'info');
+}
+
+        function updateFontSize(size) {
+    const sizeMap = {
+        'small': '14px',
+        'normal': '16px',
+        'large': '18px'
+    };
+    
+    if (sizeMap[size]) {
+        document.body.style.fontSize = sizeMap[size];
+        localStorage.setItem('fontSize', size);
+    }
+    
+    // Обновляем значение в селекте
+    const fontSizeSelect = document.getElementById('fontSize');
+    if (fontSizeSelect) fontSizeSelect.value = size;
+}
+
+// Обработчик изменения размера шрифта
+document.getElementById('fontSize')?.addEventListener('change', function(e) {
+    updateFontSize(e.target.value);
+});
+
+        function resetAppearance() {
+    // Сбрасываем тему
+    document.body.classList.remove('dark-theme');
+    localStorage.setItem('theme', 'light');
+    
+    // Сбрасываем переключатели
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleSettings = document.getElementById('themeToggleSettings');
+    
+    if (themeToggle) themeToggle.checked = false;
+    if (themeToggleSettings) themeToggleSettings.checked = false;
+    
+    // Сбрасываем размер шрифта
+    document.body.style.fontSize = '16px';
+    localStorage.setItem('fontSize', 'normal');
+    
+    // Сбрасываем цвет акцента
+    document.documentElement.style.setProperty('--primary', '#d4af37');
+    localStorage.removeItem('accentColor');
+    
+    // Сбрасываем выбор размера шрифта
+    const fontSizeSelect = document.getElementById('fontSize');
+    if (fontSizeSelect) fontSizeSelect.value = 'normal';
+    
+    showNotification('Настройки внешнего вида сброшены', 'info');
+}
+
+        function runBackup() {
+            showNotification('Резервная копия создана успешно', 'success');
+        }
+
+        function clearCache() {
+            localStorage.removeItem('jewelry_products');
+            localStorage.removeItem('jewelry_transactions');
+            localStorage.removeItem('app_settings');
+            
+            // Перезагрузка данных
+            loadData();
+            
+            showNotification('Кэш успешно очищен', 'success');
+            
+            // Обновление интерфейса
+            if (currentSection === 'dashboard') {
+                updateDashboardStats();
+                loadRecentProducts();
+            } else if (currentSection === 'products') {
+                loadProductsTable();
+            } else if (currentSection === 'transactions') {
+                loadTransactionsTable();
+            } else if (currentSection === 'settings') {
+                loadSettingsData();
+            }
+        }
+
+        // ========== УТИЛИТЫ ==========
+
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти из системы?')) {
+                localStorage.removeItem('jewelry_user');
+                window.location.href = 'index.html';
+                document.getElementById('logoutBtn').addEventListener('click', logout);
+            }
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateEl = document.getElementById('currentDate');
+            const timeEl = document.getElementById('currentTime');
+            
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('ru-RU', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        function formatPrice(amount) {
+            return new Intl.NumberFormat('ru-RU', {
+                style: 'currency',
+                currency: 'RUB',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function getProductStatus(product) {
+            if (product.quantity === 0) return 'out_of_stock';
+            if (product.quantity <= product.minQuantity) return 'low_stock';
+            return 'available';
+        }
+
+        function getProductStatusByQuantity(quantity, minQuantity) {
+            if (quantity === 0) return 'out_of_stock';
+            if (quantity <= minQuantity) return 'low_stock';
+            return 'available';
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'available': 'В наличии',
+                'low_stock': 'Мало осталось',
+                'out_of_stock': 'Нет в наличии'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getQuantityBadgeClass(quantity, minQuantity) {
+            if (quantity === 0) return 'bg-danger';
+            if (quantity <= minQuantity) return 'bg-warning';
+            return 'bg-success';
+        }
+
+        function getStockFillClass(quantity, minQuantity) {
+            if (quantity === 0) return 'stock-danger';
+            if (quantity <= minQuantity) return 'stock-warning';
+            return 'stock-good';
+        }
+
+        function getTransactionTypeText(type) {
+            const typeMap = {
+                'sale': 'Продажа',
+                'receipt': 'Поступление',
+                'write_off': 'Списание'
+            };
+            return typeMap[type] || type;
+        }
+
+        function getTransactionTypeClass(type) {
+            const classMap = {
+                'sale': 'bg-success',
+                'receipt': 'bg-primary',
+                'write_off': 'bg-danger'
+            };
+            return classMap[type] || 'bg-secondary';
+        }
+
+        function getTransactionModalTitle(type) {
+            const titleMap = {
+                'sale': 'Новая продажа',
+                'receipt': 'Новое поступление',
+                'write_off': 'Новое списание'
+            };
+            return titleMap[type] || 'Новая операция';
+        }
+
+        function getTransactionTypeDescription(type) {
+            const descriptionMap = {
+                'sale': '<i class="bi bi-cart-check text-success"></i> <strong>Продажа товара покупателю</strong><br><small class="text-muted">Уменьшает количество товара на складе. Указывайте фактическую цену продажи.</small>',
+                'receipt': '<i class="bi bi-box-arrow-in-down text-primary"></i> <strong>Поступление товара от поставщика</strong><br><small class="text-muted">Увеличивает количество товара на складе. Указывайте закупочную цену.</small>',
+                'write_off': '<i class="bi bi-x-circle text-danger"></i> <strong>Списание товара со склада</strong><br><small class="text-muted">Уменьшает количество товара (брак, утеря, порча и т.д.).</small>'
+            };
+            return descriptionMap[type] || '';
+        }
+
+        function getTransactionButtonColor(type) {
+            const colorMap = {
+                'sale': 'success',
+                'receipt': 'primary',
+                'write_off': 'danger'
+            };
+            return colorMap[type] || 'success';
+        }
+
+        // ========== УВЕДОМЛЕНИЯ ==========
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            
+            // Установка иконки
+            let icon;
+            switch(type) {
+                case 'success':
+                    icon = 'bi-check-circle';
+                    break;
+                case 'error':
+                    icon = 'bi-exclamation-triangle';
+                    break;
+                case 'warning':
+                    icon = 'bi-exclamation-circle';
+                    break;
+                default:
+                    icon = 'bi-info-circle';
+            }
+            
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi ${icon} me-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            // Автоскрытие
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Автоматическая инициализация графиков при загрузке
+setTimeout(() => {
+    if (document.getElementById('salesChart')) {
+        initCharts();
+    }
+    
+    // Загружаем статистику с задержкой
+    setTimeout(() => {
+        updateDashboardStats();
+    }, 500);
+    
+    // Проверяем отображение статистики
+    console.log('Dashboard elements check:', {
+        totalValue: document.getElementById('totalValue'),
+        totalProducts: document.getElementById('totalProducts'),
+        monthlySales: document.getElementById('monthlySales'),
+        lowStock: document.getElementById('lowStock'),
+        salesChart: document.getElementById('salesChart')
+    });
+    
+}, 1000);
+
+    </script>
+</body>
+</html>

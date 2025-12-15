@@ -1,0 +1,3 @@
+- Логин: `admin`, Пароль: `admin123`
+- Логин: `manager`, Пароль: `manager123`
+- Логин: `cashier`, Пароль: `cashier123`
