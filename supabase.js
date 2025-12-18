@@ -1,18 +1,28 @@
+// Конфигурация Supabase
 const SUPABASE_URL = 'https://pwuuadvfidxplxxkumdb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_KEqD94tqG47tX6OeG-mzUA_EvGF3beE';
 
+// Инициализация Supabase клиента
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Простая функция для проверки пароля (только для тестирования!)
+// В реальном проекте используйте bcrypt на сервере!
 function simplePasswordCheck(inputPassword, storedHash) {
+    // Для теста: если хеш соответствует нашему тестовому хешу для admin123
     if (storedHash === '$2a$10$N9qo8uLOickgx2ZMRZoMye3Z6dS2q1p2Q5b3Y5W7JYvTkKz1J2WJu') {
         return inputPassword === 'admin123';
     }
+    // Простая проверка для других паролей (в реальном проекте не делать так!)
     return inputPassword === storedHash;
 }
 
+// API для работы с пользователями
 const AuthAPI = {
+    // Регистрация
     async register(email, username, password, fullName) {
         try {
+            // В реальном проекте хешируйте пароль на сервере!
+            // Для теста используем простой "хеш"
             const simpleHash = `simple_${Date.now()}_${password}`;
             
             const { data, error } = await supabase
@@ -39,10 +49,12 @@ const AuthAPI = {
         }
     },
 
+    // Вход
     async login(email, password) {
         try {
             console.log('Login attempt for:', email);
             
+            // Ищем пользователя по email
             const { data, error } = await supabase
                 .from('users')
                 .select('*')
@@ -61,17 +73,20 @@ const AuthAPI = {
 
             console.log('User found:', data.email, 'Hash:', data.password_hash?.substring(0, 20) + '...');
 
+            // Проверяем пароль
             const isValid = simplePasswordCheck(password, data.password_hash);
             
             if (!isValid) {
                 return { success: false, error: 'Неверный пароль' };
             }
 
+            // Обновляем время последнего входа
             await supabase
                 .from('users')
                 .update({ last_login: new Date().toISOString() })
                 .eq('id', data.id);
 
+            // Создаем объект пользователя без пароля
             const user = {
                 id: data.id,
                 email: data.email,
@@ -81,6 +96,7 @@ const AuthAPI = {
                 phone: data.phone
             };
 
+            // Сохраняем сессию в localStorage
             localStorage.setItem('jewelry_user_session', JSON.stringify({
                 user,
                 timestamp: Date.now()
@@ -94,6 +110,7 @@ const AuthAPI = {
         }
     },
 
+    // Выход
     async logout() {
         try {
             localStorage.removeItem('jewelry_user_session');
@@ -104,6 +121,7 @@ const AuthAPI = {
         }
     },
 
+    // Проверка сессии
     async getSession() {
         try {
             const sessionStr = localStorage.getItem('jewelry_user_session');
@@ -114,11 +132,13 @@ const AuthAPI = {
             const session = JSON.parse(sessionStr);
             const hour = 60 * 60 * 1000;
             
+            // Проверяем, не устарела ли сессия (24 часа)
             if (Date.now() - session.timestamp > 24 * hour) {
                 localStorage.removeItem('jewelry_user_session');
                 return { success: false };
             }
 
+            // Проверяем, существует ли пользователь в БД
             const { data, error } = await supabase
                 .from('users')
                 .select('id, email, username, full_name, role, phone')
@@ -131,6 +151,7 @@ const AuthAPI = {
                 return { success: false };
             }
 
+            // Обновляем время сессии
             session.timestamp = Date.now();
             localStorage.setItem('jewelry_user_session', JSON.stringify(session));
 
@@ -141,6 +162,7 @@ const AuthAPI = {
         }
     },
 
+    // Обновление профиля
     async updateProfile(userId, updates) {
         try {
             const { data, error } = await supabase
@@ -161,7 +183,9 @@ const AuthAPI = {
     }
 };
 
+// API для работы с товарами (оставляем как есть, но адаптируем)
 const ProductsAPI = {
+    // Получить все товары
     async getProducts(filters = {}) {
         try {
             let query = supabase.from('products').select('*');
@@ -183,6 +207,7 @@ const ProductsAPI = {
         }
     },
 
+    // Получить товар по ID
     async getProductById(id) {
         try {
             const { data, error } = await supabase
@@ -199,6 +224,7 @@ const ProductsAPI = {
         }
     },
 
+    // Создать товар
     async createProduct(productData, userId) {
         try {
             const timestamp = Date.now().toString().slice(-6);
@@ -230,6 +256,7 @@ const ProductsAPI = {
         }
     },
 
+    // Обновить товар
     async updateProduct(id, updates) {
         try {
             const { data, error } = await supabase
@@ -249,6 +276,7 @@ const ProductsAPI = {
         }
     },
 
+    // Удалить товар
     async deleteProduct(id) {
         try {
             const { error } = await supabase
@@ -265,7 +293,9 @@ const ProductsAPI = {
     }
 };
 
+// API для транзакций
 const TransactionsAPI = {
+    // Получить транзакции
     async getTransactions(filters = {}) {
         try {
             let query = supabase
@@ -290,12 +320,15 @@ const TransactionsAPI = {
         }
     },
 
+    // Создать транзакцию
     async createTransaction(transactionData, userId) {
         try {
+            // Для списаний устанавливаем цену 0
             if (transactionData.type === 'write_off') {
                 transactionData.price = 0;
             }
             
+            // Если цена не указана, берем из товара
             if (!transactionData.price || transactionData.price <= 0) {
                 const product = await ProductsAPI.getProductById(transactionData.product_id);
                 if (product.success) {
@@ -316,6 +349,7 @@ const TransactionsAPI = {
 
             if (error) throw error;
 
+            // Обновляем количество товара
             const product = await ProductsAPI.getProductById(transactionData.product_id);
             if (product.success) {
                 let newQuantity = product.data.quantity;
@@ -339,10 +373,10 @@ const TransactionsAPI = {
     }
 };
 
+// Экспорт API
 window.SupabaseAPI = {
     auth: AuthAPI,
     products: ProductsAPI,
     transactions: TransactionsAPI,
     supabase
-
 };
