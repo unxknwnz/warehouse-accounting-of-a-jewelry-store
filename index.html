@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Стили авторизации */
         body {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
@@ -174,6 +175,7 @@
             font-size: 14px;
         }
         
+        /* Анимации */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -184,6 +186,7 @@
             animation: shake 0.5s ease-in-out;
         }
         
+        /* Уведомление */
         .notification {
             position: fixed;
             top: 20px;
@@ -228,6 +231,7 @@
     </style>
 </head>
 <body>
+    <!-- Уведомление -->
     <div id="notification" class="notification"></div>
     
     <div class="auth-container">
@@ -254,6 +258,7 @@
             </ul>
             
             <div class="tab-content" id="authTabsContent">
+                <!-- Вход -->
                 <div class="tab-pane fade show active" id="login" role="tabpanel">
                     <h4 class="mb-4 mt-3">Вход в систему</h4>
                     
@@ -305,6 +310,7 @@
                     </form>
                 </div>
                 
+                <!-- Регистрация -->
                 <div class="tab-pane fade" id="register" role="tabpanel">
                     <h4 class="mb-4 mt-3">Регистрация</h4>
                     
@@ -403,6 +409,7 @@
     <script src="supabase.js"></script>
     
     <script>
+        // Функция для показа уведомлений
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             if (!notification) return;
@@ -435,6 +442,7 @@
 
         
 
+        // Переключение видимости пароля
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const icon = input.parentNode.querySelector('i');
@@ -450,12 +458,14 @@
             }
         }
 
+        // Проверка текущей сессии
         async function checkSession() {
             try {
                 const session = localStorage.getItem('supabase_session');
                 if (session) {
                     const { success, user } = await SupabaseAPI.auth.getSession();
                     if (success && user) {
+                        // Автоматический редирект на дашборд
                         window.location.href = 'dashboard.html';
                     }
                 }
@@ -470,20 +480,24 @@ async function login(email, password) {
     const errorEl = document.getElementById('loginError');
     const errorMessage = document.getElementById('loginErrorMessage');
     
+    // Показываем индикатор загрузки
     const originalText = loginBtn.innerHTML;
     loginBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Вход...';
     loginBtn.disabled = true;
     
+    // Скрываем ошибки
     errorEl.classList.add('d-none');
     
     try {
         console.log('Attempting login with:', email);
         
+        // Используем НАШУ систему аутентификации, а не Supabase Auth
         const result = await SupabaseAPI.auth.login(email, password);
         
         if (result.success) {
             showNotification('Вход выполнен успешно!', 'success');
             
+            // Перенаправляем на дашборд
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
             }, 1000);
@@ -499,20 +513,24 @@ async function login(email, password) {
         errorEl.classList.remove('d-none');
         showNotification('Ошибка подключения', 'error');
     } finally {
+        // Восстанавливаем кнопку
         loginBtn.innerHTML = originalText;
         loginBtn.disabled = false;
     }
 }
 
+        // Регистрация
         async function register(fullName, email, username, password) {
             const registerBtn = document.getElementById('registerBtn');
             const errorEl = document.getElementById('registerError');
             const errorMessage = document.getElementById('registerErrorMessage');
             
+            // Показываем индикатор загрузки
             const originalText = registerBtn.innerHTML;
             registerBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Регистрация...';
             registerBtn.disabled = true;
             
+            // Скрываем ошибки
             errorEl.classList.add('d-none');
             
             try {
@@ -521,8 +539,10 @@ async function login(email, password) {
                 if (result.success) {
                     showNotification('Регистрация успешна! Проверьте email для подтверждения.', 'success');
                     
+                    // Переключаемся на вкладку входа
                     document.getElementById('login-tab').click();
                     
+                    // Очищаем форму
                     document.getElementById('registerForm').reset();
                     
                 } else {
@@ -535,11 +555,13 @@ async function login(email, password) {
                 errorEl.classList.remove('d-none');
                 showNotification('Ошибка подключения', 'error');
             } finally {
+                // Восстанавливаем кнопку
                 registerBtn.innerHTML = originalText;
                 registerBtn.disabled = false;
             }
         }
 
+        // Обработка формы входа
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -555,6 +577,7 @@ async function login(email, password) {
         });
 
         
+        // Обработка формы регистрации
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -564,6 +587,7 @@ async function login(email, password) {
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             
+            // Валидация
             if (!fullName || !email || !username || !password || !confirmPassword) {
                 showNotification('Заполните все поля', 'error');
                 return;
@@ -582,6 +606,7 @@ async function login(email, password) {
             await register(fullName, email, username, password);
         });
 
+        // Автоматический вход по Enter
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const activeTab = document.querySelector('.nav-link.active');
@@ -593,13 +618,14 @@ async function login(email, password) {
             }
         });
 
+        // Автозаполнение для тестирования
         document.getElementById('loginEmail').value = 'admin@goldstandard.ru';
         document.getElementById('loginPassword').value = 'admin123';
 a
+        // Проверка сессии при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             checkSession();
         });
     </script>
 </body>
-
 </html>
